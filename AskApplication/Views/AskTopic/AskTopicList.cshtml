@@ -1,0 +1,71 @@
+﻿ 
+@using OUDAL
+@{
+    ViewBag.Title = "AskTopic";
+    ViewBag.Menu = "AskTopic-AskTopic维护";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+@section CSS{
+    
+}
+@section scripts{
+   
+    <script type="text/javascript">
+        var g_grid={};
+        jQuery(document).ready(function () {
+            var PostData = {}; 
+            $(".datepicker").datepicker({ changeMonth: true, changeYear: true, showButtonPanel: true, showOtherMonths: true, selectOtherMonths: true });
+            @Html.Raw(JqGridSimple.OutGrid("AskTopicQuery"));
+            g_grid = jQuery('#listGrid');
+            function AfterInsertRow(rowid, aData) { 
+            }
+        });
+        var colModelGrid = [ { name: 'id', label: 'id', index: 'id', width: 1, align: 'left' , hidden: true 
+        }, {
+            name: 'CreateTime', label: 'CreateTime', index: 'CreateTime', width: 150, align: 'left', formatter: 'date'
+        }, {
+            name: 'UpdateTime', label: 'UpdateTime', index: 'UpdateTime', width: 150, align: 'left', formatter: 'date'
+},{ name: 'State', label: 'State', index: 'State', width: 150, align: 'left'  
+},{ name: 'Title', label: 'Title', index: 'Title', width: 150, align: 'left'  
+},{ name: 'Weight', label: 'Weight', index: 'Weight', width: 150, align: 'left'  
+},{ name: 'Type', label: 'Type', index: 'Type', width: 150, align: 'left'  
+},{ name: 'Order', label: 'Order', index: 'Order', width: 150, align: 'left'  
+}];
+     
+        function rowclick(id) { 
+              var pk = g_grid.getRowData(id).id;
+            
+            OpenFullWindow("./AskTopicView/" + pk);
+        }
+        function AddNew() {
+            OpenFullWindow("./AskTopicEdit/0");
+        }
+        function SearchClick() {
+             $('#listGrid').appendPostData({ CreateTime: $("#CreateTime").val() });
+             $('#listGrid').appendPostData({ UpdateTime: $("#UpdateTime").val() });
+             $('#listGrid').appendPostData({ State: $("#State").val() });
+             $('#listGrid').appendPostData({ Title: $("#Title").val() });
+             $('#listGrid').appendPostData({ Weight: $("#Weight").val() });
+             $('#listGrid').appendPostData({ Type: $("#Type").val() });
+             $('#listGrid').appendPostData({ Order: $("#Order").val() });
+            
+            $('#listGrid').trigger('reloadGrid');
+        }
+    </script>
+}
+
+<div class="ui-widget  ui-corner-all searchdiv" >
+     @*@Html.ShortInput("CreateTime", "CreateTime:")
+     @Html.ShortInput("UpdateTime", "UpdateTime:")
+     @Html.ShortInput("State", "State:")
+     @Html.ShortInput("Title", "Title:")
+     @Html.ShortInput("Weight", "Weight:")
+     @Html.ShortInput("Type", "Type:")
+     @Html.ShortInput("Order", "Order:")*@
+@MyControls.SearchBtn()
+@MyControls.Btn("新增", "AddNew()")
+ </div>
+@Html.Raw(JqGridSimple.OutTable())
+
+
+

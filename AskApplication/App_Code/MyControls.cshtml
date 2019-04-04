@@ -1,0 +1,114 @@
+﻿ 
+
+@helper ShowLoginLogo()
+{
+    <img src="/Images/loginlogo.png" />
+}
+@helper ShowHomeCenterLogo()
+{
+    <img src="/Content/login/img/logo_md_new.png" />
+}
+@helper ShowMainHeaderColor()
+{
+
+}
+@helper ShowMainHeaderBorderColor()
+{
+
+}
+
+@helper ShowMainTitle()
+{
+    <div class="gtja-title">
+         
+    </div>
+}
+
+@helper ShowMainLogo()
+{
+
+    <div class="navbar-login">
+        <img class="common-logo" src="/Images/login-2.png" />
+    </div>
+}
+ 
+@helper Btn(string name, string onClick, string icon = "", string id = "", string addclass = "")
+{
+
+    if (icon != "")
+    {
+        <input @if (id != "") { <text> id="@id" </text> } class="btn btn-primary @addclass" type="button" style="width:auto;height:29px;border: none;border-radius: 3px;" onclick="@onClick;return false;" value="@name" /><span class='glyphicon glyphicon-@icon'></span>
+    }
+    else
+    {
+        <input @if (id != "") { <text> id="@id" </text> } class="btn btn-primary  @addclass" type="button" style="width:auto;height:29px;border: none;border-radius: 3px;" onclick="@onClick;return false;" value="@name" />
+    }
+}
+@helper BtnOld(string name, string onClick, string icon = "", string id = "")
+{
+
+    if (icon != "")
+    {
+        <button @if (id != "") { <text> id="@id" </text> } class="btn btn-primary " onclick="@onClick;return false;"><span class='glyphicon glyphicon-@icon'></span>@name</button>
+    }
+    else
+    {
+        <button @if (id != "") { <text> id="@id" </text> } class="btn btn-primary " onclick="@onClick;return false;">@name</button>
+    }
+}
+@helper ToolbarBtn(string name, string onClick, string icon = "", string id = "")
+{
+
+    if (icon != "")
+    {
+        var iconstr = "";
+        if (icon.IndexOf(' ') > 0)
+        {
+            iconstr = icon;
+        }
+        else
+        {
+            iconstr = "glyphicon glyphicon-" + icon;
+        }
+        <button @if (id != "") { <text> id="@id" </text> } class="btn btn-white btn-primary " onclick="@onClick;return false;"><span class='@iconstr'></span> @name</button>
+    }
+    else
+    {
+        <button @if (id != "") { <text> id="@id" </text> } class="btn btn-white btn-primary" onclick="@onClick;return false">@name</button>
+    }
+
+}
+@helper BtnNormal(string name, string onClick)
+{
+    <input type="button" class="btn " onclick="@onClick    ;" value="@name" />
+}
+@helper SubmitBtn(string name, string onClick = "")
+{
+
+
+    <input type="submit" class="btn btn-primary" value="@name" />
+}
+@helper FormBtn(bool cancelIsClose, string title = "保 存")
+{
+    <div style="width:75%;margin:0px auto">
+        <input type="submit" class="btn btn-primary" value="@title" />
+        @if (cancelIsClose == true)
+        {
+            <input type="button" class="btn btn-default" onclick="window.close();" value="取 消" style="float:right" />
+        }
+        else
+        {
+            <input type="button" class="btn btn-default" onclick="GoBack();" value="取 消" style="float:right" />
+        }
+
+    </div>
+}
+@helper SearchBtn(string name="查询")
+{<button class="btn btn-primary " style="border: none;background: #4667CC;border-radius: 3px;margin-left: 5px;" onclick="return(SearchClick(true));"><span class="glyphicon glyphicon-search"></span>@name</button>
+
+}
+@helper PrintBtn()
+{
+    <input type="button" class="btn btn-primary " value="打印" onclick="var printwindow = window.open(rootpath + 'home/output');  " />
+}
+ 

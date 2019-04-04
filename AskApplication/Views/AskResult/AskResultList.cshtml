@@ -1,0 +1,302 @@
+﻿
+@using OUDAL
+@{
+    ViewBag.Title = "问卷结果表";  
+    int ProjectId;
+    int.TryParse(Request.RequestContext.RouteData.Values["projectid"] + "", out ProjectId);
+}
+     
+ 
+@section scripts{
+
+    <script type="text/javascript">
+        var g_grid = {};
+        jQuery(document).ready(function() {
+            var PostData = {};
+            $(".datepicker").datepicker({ changeMonth: true, changeYear: true, showButtonPanel: true, showOtherMonths: true, selectOtherMonths: true });
+            @Html.Raw(JqGridSimple.OutGrid("AskResultQuery?projectid=" + ProjectId));
+            g_grid = jQuery('#listGrid');
+
+            function keyEnter(event) {
+                try {
+                    var e = event ? event : (window.event ? window.event : null);
+                    if (e.keyCode == 13) {
+                        SearchClick();
+                    }
+                } catch (e) {
+                }
+            }
+
+            document.onkeydown = keyEnter;
+
+            try {
+                SetAceDropDown();
+            } catch (e) {
+
+            }
+
+            function AfterInsertRow(rowid, aData) {
+            }
+        });
+        //会员名称 问卷名称，分数，结果说明，提交时间，查看明细
+        var colModelGrid = [
+            {
+                name: 'id',
+                label: 'id',
+                index: 'id',
+                width: 1,
+                align: 'left',
+                hidden: true
+            }, {
+                name: 'createdate',
+                label: '创建时间',
+                index: 'createdate',
+                width: 150,
+                align: 'left',
+                formatter: 'date'
+            }, {
+                name: 'answer',
+                label: '答案',
+                index: 'answer',
+                width: 150,
+                align: 'left',
+                maxlength: 30
+            }, {
+                name: 'uname',
+                label: '会员名称',
+                index: 'uname',
+                width: 100,
+                align: 'left'
+            }, {
+                name: 'pagetitle',
+                label: '问卷名称',
+                index: 'pagetitle',
+                width: 150,
+                align: 'left',
+                maxlength: 30
+            }, {
+                name: 'answerHtml',
+                label: '问卷查看',
+                index: 'answerHtml',
+                formatter: formatModel,
+                edittype: 'custom',
+                width: 150,
+                align: 'left',
+                sortable: false
+            }, {
+                name: '',
+                label: '按钮',
+                index: '',
+                formatter: customButton,
+                edittype: 'custom',
+                width: 150,
+                align: 'left',
+                sortable: false
+            }
+        ];
+
+        function customButton(cellValue, options, rowObject) {
+            //g_Array[g_Array.length] = cellValue;
+            //g_Title[g_Title.length] = rowObject.pagetitle;
+            var imageHtml = "<input type=\"button\" value=\"删除\" class=\"btn-warning\" onclick=\"deleteAskResult(" + rowObject.id + ");\" />";
+            return imageHtml;
+        }
+
+        function deleteAskResult(id) {
+            if (confirm("确定删除吗?")) {
+                $.ajax({
+                    type: "Post",
+                    url: "/AskResult/DeleteAskResult",
+                    data: { id: id, d: new Date() },
+                    success: function(data) {
+                        showmiddlemessage(data.obj);
+                        if (data.success == true) {
+                            //window.opener.location = window.opener.location;
+                            //window.close();
+                            $('#listGrid').trigger('reloadGrid');
+                        }
+                    },
+                    error: function(msg) {
+                        alert("error:" + msg);
+                    }
+                });
+            }
+        }
+
+        var g_Array = [];
+        var g_Title = [];
+        var g_askid = "";
+        var g_l;
+
+        function formatModel(cellValue, options, rowObject) {
+            //  cellValue = HTMLEncode2(cellValue);//HtmlUtil.htmlEncode(cellValue);
+            // if (g_g == "") g_g = cellValue; 
+            g_Array[g_Array.length] = cellValue;
+            g_Title[g_Title.length] = rowObject.pagetitle;
+
+            var imageHtml = "<input type=\"button\" value=\"问卷查看详细\" onclick=\"showAnswerHtml(" + g_Array.length + ",\'{0}\');\" />".template(rowObject.id);
+            return imageHtml;
+        }
+
+        function showAnswerHtml(l, id) {
+            g_askid = id;
+            g_l = l;
+            $("#showtitle").html(g_Title[l - 1]);
+            $("#showdiv").html(g_Array[l - 1]);
+            $('#modal-form').modal('show');
+        }
+
+        function rowclick(id) {
+            var pk = g_grid.getRowData(id).id;
+
+            // OpenFullWindow("./AskResultView/" + pk);
+        }
+
+        function AddNew() {
+            OpenFullWindow("./AskResultEdit/0");
+        }
+
+
+        function SearchClick(isSearchclick) {
+            var g_grid = $('#listGrid');
+            $('#listGrid').appendPostData({ uname: $("#uname").val() });
+            $('#listGrid').appendPostData({ pagetitle: $("#pagetitle").val() });
+
+            $('#listGrid').appendPostData({ DateFromcreatedate: $("#DateFromcreatedate").val() });
+            $('#listGrid').appendPostData({ DateTocreatedate: $("#DateTocreatedate").val() });
+
+            if (typeof (isSearchclick) != "undefined" && isSearchclick) {
+                //点击搜索时默认第一页
+                g_grid.jqGrid('setGridParam', {
+                    page: 1
+                });
+            }
+
+            $('#listGrid').trigger('reloadGrid');
+        }
+
+        var HtmlUtil = {
+            /*1.用浏览器内部转换器实现html转码*/
+            htmlEncode: function(html) {
+                //1.首先动态创建一个容器标签元素，如DIV
+                var temp = document.createElement("div");
+                //2.然后将要转换的字符串设置为这个元素的innerText(ie支持)或者textContent(火狐，google支持)
+                (temp.textContent != undefined) ? (temp.textContent = html) : (temp.innerText = html);
+                //3.最后返回这个元素的innerHTML，即得到经过HTML编码转换的字符串了
+                var output = temp.innerHTML;
+                temp = null;
+                return output;
+            },
+            /*2.用浏览器内部转换器实现html解码*/
+            htmlDecode: function(text) {
+                //1.首先动态创建一个容器标签元素，如DIV
+                var temp = document.createElement("div");
+                //2.然后将要转换的字符串设置为这个元素的innerHTML(ie，火狐，google都支持)
+                temp.innerHTML = text;
+                //3.最后返回这个元素的innerText(ie支持)或者textContent(火狐，google支持)，即得到经过HTML解码的字符串了。
+                var output = temp.innerText || temp.textContent;
+                temp = null;
+                return output;
+            }
+        };
+
+        function setradio(obj) {
+            var name = $(obj).attr("name");
+            var checked = obj.checked;
+            var cList= $("input[name='{0}']".template(name));
+            cList.each(function (d, i) {
+                if (i.value != obj.value) {
+                    $(i).removeAttr("checked");
+                } else {
+                    
+                }
+            });
+            if (checked) obj.setAttribute('checked', true);
+            else obj.removeAttribute('checked'); //要记得删除，要不默认的选择会随innerHTML一起返回
+        }
+
+
+        function HTMLEncode2(str) {
+            var s = "";
+            if (str.length == 0) return "";
+            s = str.replace(/&/g, "&");
+            s = s.replace(/</g, "<");
+            s = s.replace(/>/g, ">");
+            s = s.replace(/ /g, " ");
+            s = s.replace(/\'/g, "'");
+            s = s.replace(/\"/g, "\"");
+            return s;
+        }
+
+        function HTMLDecode2(str) {
+            var s = "";
+            if (str.length == 0) return "";
+            s = str.replace(/&/g, "&");
+            s = s.replace(/</g, "<");
+            s = s.replace(/>/g, ">");
+            s = s.replace(/ /g, " ");
+            s = s.replace(/'/g, "\'");
+            s = s.replace(/"/g, "\"");
+            return s;
+        }
+
+        function saveaskresult() {
+            if (!confirm("会更新问卷数据，请确认?")) return;
+            var answerHtml = $("#showdiv").html();
+            g_Array[g_l - 1] = answerHtml;
+            $.ajax({
+                type: "Post",
+                url: "/AskResult/UpdateById",
+                data: { id: g_askid, answerHtml: answerHtml, d: new Date() },
+                success: function(data) {
+                    showmiddlemessage("更新成功");
+                },
+                error: function(msg) {
+                    alert("error:" + msg);
+                }
+            });
+        }
+
+
+    </script>
+}
+
+<div class="ui-widget  ui-corner-all searchdiv ">
+    @*@Html.ShortInput("score", "分数:")*@
+    @*@Html.SearchDateRange("createdate", "创建时间")
+    @Html.ShortInput("uname", "客户名:")
+    @Html.ShortInput("pagetitle", "问卷名称:")
+    @MyControls.SearchBtn()*@
+   @*need todo 创建日期范围*@
+
+   
+</div>
+@Html.Raw(JqGridSimple.OutTable())
+
+<div id="modal-form" class="modal" tabindex="-1">
+    <div class="modal-dialog" style="width: 1000px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="blue bigger" id="showtitle">查看</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12" id="showdiv">
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-primary" onclick="saveaskresult()" data-dismiss="modal">
+                    <i class="ace-icon fa fa-check"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

@@ -1,0 +1,84 @@
+﻿
+
+
+@model OUDAL.AskPage
+@using OUDAL; 
+@{
+    ViewBag.Title = "AskPage|查看";
+    Layout = "~/Views/Shared/_InfoLayout.cshtml";
+}
+@section scripts{
+    <script type="text/javascript">
+    function deleteAskPage(id) {
+        if (confirm("确定删除吗?")) {
+        $.ajax({
+            type: "Post",
+            url: "../DeleteAskPage",
+            data: { id: id, d: new Date() },
+            success: function (data) {
+                alert(data.obj);
+                if (data.success == true) {
+                    window.opener.location = window.opener.location;
+                    window.close();
+                }
+            },
+            error: function (msg) {
+                alert("error:" + msg);
+            }
+        });
+        }
+    }
+
+    var g_pageid = "";
+    var g_client = "";
+    function PopQuestionPage(pageid) {
+        g_pageid = pageid;
+        $('#modal-form').modal('show');
+        $("#iframeselclient").attr("src", "/Client/ClientListPick/");
+    }
+    function SetAskPageClient(data) {
+        g_client = data;
+        var pageid = '@Model.id';
+        window.location.href ="/Client/ClientQuestionPage/?pageid=" + pageid + "&cid="+data.Id+"&cname="+data.AllName;
+
+    }
+    </script>
+}
+
+<div class="widget-toolbox btn-toolbar ui-widget  ui-corner-all toolbarDiv">
+
+    @MyControls.Btn("用户添加调查", "PopQuestionPage(" + Model.id + ");")
+    @MyControls.Btn("删除", "deleteAskPage('" + Model.id + "');", "remove")
+    @MyControls.Btn("关闭", "window.close();")
+
+</div> @Html.HiddenFor(model => model.id)
+<div class=" ui-corner-all">
+
+    <table class="table table-bordered">
+        @MyControls.ViewTable(1)
+
+        <tr>@Html.MyDisplayFor(m => m.CreateTime)</tr>
+        <tr>@Html.MyDisplayFor(m => m.Type)</tr>
+        <tr>@Html.MyDisplayFor(m => m.Name)</tr>
+        <tr>@Html.MyDisplayFor(m => m.State)</tr>
+        <tr>@Html.MyDisplayFor(m => m.Weight)</tr>
+    </table>
+</div>
+
+
+<div id="modal-form" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width: 1000px; height: 800px;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="blue bigger">选择客户</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="page-content">
+                    <iframe id="iframeselclient" width="100%" height="550px"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

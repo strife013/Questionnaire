@@ -1,0 +1,130 @@
+﻿@using Common.Utilities
+@model IEnumerable<OUDAL.AskResult>
+<script>
+    $(function() {
+        setBMI();
+       //setTimeout(function () { setBMI(); }, 800);
+       
+    });
+    function settext(obj) {
+        if (obj.id == "iptquestion79") {
+            //debugger;
+
+        }
+        obj.setAttribute('value', obj.value);
+    }
+    function setBMI() {
+        try {
+            
+            var tz = parseFloat($("#iptquestion77").val());
+            var sg = parseFloat($("#iptquestion78").val());
+            var bmi = tz / Math.pow(sg, 2);
+            bmi = bmi.toFixed(3) + "";
+            //BMI = 體重(公斤) / 身高2(公尺2)
+            $("#iptquestion79").parent().html(bmi);
+            //$("#iptquestion79").parent().hide();
+            //$("#iptquestion79").parent().show();
+            //$("#iptquestion79").val(bmi.toFixed(2)+"");
+        } catch (e) {
+            alert(e);
+        }
+    }
+
+    function deleteAskResult(id) {
+        if (!confirm("确认删除此问卷?")) return false;
+        var opt = {
+            url: "/AskResult/DeleteAskResult", 
+            data: { id: id },  
+            success: function (data) {
+                main.message(data.obj);
+                main.message("请刷新查看");
+            }
+        };
+        main.ajax(opt);
+    }
+</script>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.uname)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.pagetitle)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.createdate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.score)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.result)
+        </th>
+        @*<th>
+            @Html.DisplayNameFor(model => model.answer)
+        </th>*@
+        <th>@Html.DisplayNameFor(model => model.answerHtml)</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.uname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.pagetitle, new { Value = StringHelper.GetLeftStr(item.pagetitle, 20) })
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.createdate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.score)
+            </td> 
+            <td>
+                @StringHelper.GetLeftStr(item.answer, 20)
+                @*@Html.DisplayFor(modelItem => item.answer, new {Value = StringHelper.GetLeftStr(item.answer, 20)})*@
+            </td>
+            <td>
+                @if (@item.answerHtml != null)
+                {
+                    int t = 1;
+                    t++; 
+                    <button class="button" onclick="javascript:$('#modal-form@{@item.id}').modal('show');setTimeout(function(){setBMI();},1000);">查看</button>
+                    <button class="button" onclick="javascript:deleteAskResult('@{@item.id}')">删除问卷</button>
+
+                    <div id="div@{@item.id}" style="display: none">
+                        @Html.Raw(HttpUtility.HtmlDecode(@item.answerHtml))
+                    </div>
+
+
+                    <div id="modal-form@{@item.id}" class="modal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="width: 100%;">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="blue bigger">@item.pagetitle</h4>
+                                </div>
+
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-xs-12 col-sm-12">  
+                                            @Html.Raw(HttpUtility.HtmlDecode(@item.answerHtml))
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button class="btn btn-sm btn-primary" data-dismiss="modal">
+                                        <i class="ace-icon fa fa-check"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </td>
+        </tr>
+    }
+
+</table>

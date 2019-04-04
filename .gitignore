@@ -3,3 +3,9 @@
 ################################################################################
 
 /.vs
+/AskApplication/bin
+/AskApplication/obj
+/AskApplication/Properties/PublishProfiles
+/HealthErpDAL/obj
+/HealthErpDAL/bin
+/packages

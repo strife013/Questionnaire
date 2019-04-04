@@ -1,0 +1,49 @@
+﻿
+
+
+  
+
+@model OUDAL.AskTopic
+@using OUDAL; 
+ 
+@{
+    ViewBag.Title = "AskTopic | 编辑";
+    Layout = "~/Views/Shared/_InfoLayout.cshtml";
+}
+@section scripts
+    {
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+<script type="text/javascript">
+        jQuery(document).ready(function () {
+            $(".datepicker").datepicker({ changeMonth: true, changeYear: true, showButtonPanel: true, showOtherMonths: true, selectOtherMonths: true });
+            $(".form-group").addClass("col-md-6"); 
+        });
+
+</script>
+
+
+}
+ 
+@using (Html.BeginForm()) {
+    <div class="well" style="margin:0px auto;margin-top:10px;"	>
+        @Html.ValidationSummary(true)
+        <fieldset>
+            <legend>AskTopic修改</legend>
+        
+<!--目前框架新增和修改同一界面，造成的问题就是输入的字段新增和修改都一样-->
+				 @Html.HiddenFor(model => model.id)
+@Html.LabelFor(model => model.CreateTime)
+@Html.LabelFor(model => model.UpdateTime)
+@Html.TextBoxFor(model => model.State)
+@Html.TextBoxFor(model => model.Title)
+@Html.TextBoxFor(model => model.Weight)
+@Html.TextBoxFor(model => model.Type)
+@Html.TextBoxFor(model => model.Order)
+
+        </fieldset>
+    </div>
+<div style="margin:0px auto;padding:10px;">
+@MyControls.FormBtn(true)
+</div>
+}

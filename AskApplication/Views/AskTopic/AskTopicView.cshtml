@@ -1,0 +1,58 @@
+﻿
+
+
+@model OUDAL.AskTopic
+@using OUDAL;
+ ;
+ 
+@{
+    ViewBag.Title = "AskTopic|查看";
+    Layout = "~/Views/Shared/_InfoLayout.cshtml";
+}
+@section scripts{
+<script type="text/javascript">
+    function deleteAskTopic(id) {
+        if (confirm("确定删除吗?")) {
+        $.ajax({
+            type: "Post",
+            url: "../DeleteAskTopic",
+            data: { id: id, d: new Date() },
+            success: function (data) {
+                alert(data.obj);
+                if (data.success == true) {
+                    window.opener.location = window.opener.location;
+                    window.close();
+                }
+            },
+            error: function (msg) {
+                alert("error:" + msg);
+            }
+        });
+        }
+    }
+</script>
+} 
+
+<div class="widget-toolbox btn-toolbar ui-widget  ui-corner-all toolbarDiv">
+
+
+
+    @MyControls.Btn("修改", "window.location.href=('../AskTopicEdit/" + Model.id + "');", "edit")
+    @MyControls.Btn("删除", "deleteAskTopic('"+ Model.id + "');", "remove")
+	@MyControls.Btn("关闭", "window.close();")
+</div> @Html.HiddenFor(model => model.id)
+<div class=" ui-corner-all">
+
+    <table class="table table-bordered">
+    @MyControls.ViewTable(1)
+    
+             <tr>@Html.MyDisplayFor(m => m.CreateTime)</tr>
+             <tr>@Html.MyDisplayFor(m => m.UpdateTime)</tr>
+             <tr>@Html.MyDisplayFor(m => m.State)</tr>
+             <tr>@Html.MyDisplayFor(m => m.Title)</tr>
+             <tr>@Html.MyDisplayFor(m => m.Weight)</tr>
+             <tr>@Html.MyDisplayFor(m => m.Type)</tr>
+             <tr>@Html.MyDisplayFor(m => m.Order)</tr>
+</table>
+</div>
+

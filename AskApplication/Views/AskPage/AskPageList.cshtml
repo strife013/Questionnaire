@@ -1,0 +1,155 @@
+﻿@using HealthErp.Web.Controllers
+@{
+}
+ 
+@section scripts{
+
+    <script type="text/javascript">
+        var g_grid = {};
+        jQuery(document).ready(function() {
+            var PostData = {};
+            @Html.Raw(JqGridSimple.OutGrid("/AskPage/AskPageQuery"));
+            g_grid = jQuery('#listGrid');
+            function keyEnter(event) {
+                try {
+                    var e = event ? event : (window.event ? window.event : null);
+                    if (e.keyCode == 13) {
+                        SearchClick();
+                    }
+                } catch (e) {
+                }
+            }
+            document.onkeydown = keyEnter;
+
+            try {
+                SetAceDropDown();
+            } catch (e) {
+
+            }
+
+            function AfterInsertRow(rowid, aData) {
+            }
+        });
+        var colModelGrid = [
+            {
+                name: 'id',
+                label: 'id',
+                index: 'id',
+                width: 1,
+                align: 'left',
+                hidden: true
+            }, {
+                name: 'CreateTime',
+                label: '创建时间',
+                index: 'CreateTime',
+                width: 150,
+                align: 'left',
+                formatter: 'date'
+            }, {
+                name: 'Name',
+                label: '问卷名称',
+                index: 'Name',
+                width: 150,
+                align: 'left'
+            }, {
+                name: 'id',
+                label: '问卷编辑',
+                index: 'id',
+                width: 150,
+                align: 'left',
+                formatter: formatModel,
+                edittype: 'custom'
+            }, {
+                name: 'id',
+                label: '删除问卷',
+                index: 'id',
+                width: 150,
+                align: 'left',
+                formatter: deletePage,
+                edittype: 'custom'
+            }
+        ];
+
+        function deletePage(cellValue, options, rowObject) {
+
+            //g_Array[g_Array.length] = cellValue;
+            //g_Title[g_Title.length] = rowObject.pagetitle;
+            var imageHtml = "<input type=\"button\" value=\"删除问卷\" class=\"btn-danger\" onclick=\"DeleteAskPage(" + rowObject.id + ");\" />";
+            return imageHtml;
+        }
+
+        function DeleteAskPage(id) {
+            if (!confirm("确认删除问卷?")) return;
+            $.post("/AskPage/DeleteAskPage", { id: id }, function(data, textStatus) {
+                if (data && data.obj && data.obj == "已删除") {
+                    alert("已删除");
+                    SearchClick();
+                }
+            });
+        }
+
+
+        function formatModel(cellValue, options, rowObject) {
+            //g_Array[g_Array.length] = cellValue;
+            //g_Title[g_Title.length] = rowObject.pagetitle;
+            var imageHtml = "<input type=\"button\" value=\"问卷编辑\"  class=\"btn-info\" onclick=\"openAskEdit(" + rowObject.id + ");\" />";
+            return imageHtml;
+        }
+
+        function openAskEdit(id) {
+            OpenFullWindow("./AskPageSingleEdit/?pid=" + id);
+        }
+
+        function rowclick(id) {
+            var pk = g_grid.getRowData(id).id;
+
+          //  OpenFullWindow("./AskPageView2/" + pk);
+        }
+
+        function EditAskPage() {
+            OpenFullWindow("./AskPageEdit2/0");
+        }
+
+        function SearchClick(isSearchclick) {
+
+            window.location.href = window.location.href;
+            var g_grid = $('#listGrid');
+            $('#listGrid').appendPostData({ Name: $("#Name").val() });
+
+
+            if (typeof (isSearchclick) != "undefined" && isSearchclick) {
+                //点击搜索时默认第一页
+                g_grid.jqGrid('setGridParam', {
+                    page: 1
+                });
+            }
+
+            $('#listGrid').trigger('reloadGrid');
+        }
+
+        function SavePage() {
+
+            var pagetitle = $("#iptPageTitle").val();
+            $.post("/AskPage/AddAskPage", { name: pagetitle }, function(data, textStatus) {
+                SearchClick();
+            });
+        }
+
+        function ShowAddNew() {
+            $("#addnew").show();
+        }
+    </script>
+}
+
+    <div class="ui-widget  ui-corner-all searchdiv ">
+        
+    
+        <button class="btn-bold" onclick="javascript: EditAskPage();">编辑问卷</button>
+        <button class="btn-bold" onclick="javascript: ShowAddNew();">新增问卷</button>
+        <div id="addnew" style="display: none">
+            <label for="iptPageTitle">新增问卷名</label>
+            <input placeholder="" id="iptPageTitle" name="iptPageTitle" />
+            <button class="btn-bold" onclick="javascript: SavePage();">新增</button>
+        </div>
+    </div>
+    @Html.Raw(JqGridSimple.OutTable())

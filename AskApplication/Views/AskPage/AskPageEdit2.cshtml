@@ -1,0 +1,374 @@
+﻿@model OUDAL.AskPage
+@using OUDAL;
+@{
+    ViewBag.Title = "AskPage | 编辑";
+    Layout = "~/Views/Shared/_InfoLayout.cshtml";
+}
+@section scripts
+{
+    <script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            $(".datepicker").datepicker({ changeMonth: true, changeYear: true, showButtonPanel: true, showOtherMonths: true, selectOtherMonths: true });
+            $(".form-group").addClass("col-md-6");
+
+            //左侧显示所有没选过的问题项
+            SetUnselectContent(1, 20);
+
+            //右侧显示当前题目的问题想
+
+        });
+
+        function SelectPage(id, desc) {
+            $("#pageId").val(id);
+            $("#spanTopic").html(desc);
+            $.post("/AskPage/SelectAskTopics", { pageId: id }, function (data, textStatus) {
+                if (!data) {
+                    alert(data);
+                    return;
+                }
+                ShowItems(data);
+            });
+
+
+        }
+
+
+        function SetUnselectContent(pageindex, pagesize) {
+            $.post("/AskPage/AskTopicQuery2", { pageindex: pageindex, pagesize: pagesize }, function (data, textStatus) {
+
+                var lihtml = "";
+                //0 id,1 name
+                var unseltemplateli = "<li><a href=\"#\" onclick=\"SelectPage({0}, '{1}');\">{1}</a> </li>";
+                for (var i = 0; i < data.rows.length; i++) {
+                    lihtml += unseltemplateli.template(data.rows[i].id, data.rows[i].Name);
+                }
+                $("#ulunselcontent").html(lihtml);
+
+                //绑定pager
+                var pagecount = (data.total + pagesize - 1) / pagesize;
+                if (pagecount <= 1) return;
+                //0 curpageindex,1 pagesize
+                var pagetemplate = "<li><a href=\"#\" onclick=\"SetUnselectContent({0},{1});\">{0}</a></li>";
+                var pageHtml = "";
+                for (var i = 1; i <= pagecount; i++) {
+                    ///3页范围内显示 pageindex
+                    if (i > pageindex - 3 && i < pageindex + 3) {
+                        pageHtml += pagetemplate.template(i, pagesize);
+                    }
+                }
+
+                $("#ultopicpager").html(pageHtml);
+                //data.pageindex, data.pagesize
+            });
+
+        }
+
+        var g_curtopicid = 0;
+        var g_curtopictitle = "";
+        function showContents(topicId, title) {
+            g_curtopicid = topicId;
+            g_curtopictitle = title;
+            $('#modal-form').modal('show');
+        }
+
+
+        function ShowItems(items) {
+            var str = "<ol>";
+
+            $.each(items, function (i) {
+
+                //<a href=\"#modal-form\" role=\"button\" class=\"blue\" data-toggle=\"modal\"> Form Inside a Modal Box </a>href=\"#modal-form\"
+                //selected="selected"
+                var selsingle = this.Type == "danxuan" ? "selected='selected'" : "";
+                var selmuti = this.Type == "duoxuan" ? "selected='selected'" : "";
+                var seltext = this.Type == "wenben" ? "selected='selected'" : "";
+
+                str += "<li><a href='#' onclick='showContents(" + this.id + ",\"" + this.Title + "\")'   role=\"button\" class=\"blue\" data-toggle=\"modal\"  ><span id='span" + this.id + "' style='min-width:200px;display: inline-block;'>" + this.Title
+                    + "</span></a><input type='text' id='text" + this.id + "'  style='display:none' value='"
+                    + this.Title + "'/><select   id='selecttype" + this.id + "'  ><option value='danxuan' " + selsingle + ">单选</option><option value='duoxuan' " + selmuti + ">多选</option><option value='wenben' " + seltext + ">文本</option></select><input class='btn btn-default' type='button' id='" + this.id + "' onclick='edititem(this);' value='修改'/>" +
+                    "<a href='#' onclick='UpItem(" + this.id + ")'><span class='glyphicon glyphicon-arrow-up'></span></a> " +
+                    "<a href='#' onclick='DownItem(" + this.id + ")'><span class='glyphicon glyphicon-arrow-down'></span></a> " +
+                    "<a href='#' onclick='DeleteItem(" + this.id + ")'><span class='glyphicon glyphicon-remove'></span></a>" +
+                    "</li>";
+            });
+            str += "<li><input type='text' id='newitem' style='min-width:198px;'><select   id='newselecttype'  ><option value='danxuan'>单选</option><option value='duoxuan'>多选</option><option value='wenben'>文本</option></select> <input type='button' class='btn btn-default' onclick='addnewitem();' value='添加'/></li><ol>";
+            $("#divItems").html(str);
+            $("#divItems").find("select").attr("disabled", "disabled");
+            $("#newselecttype").removeAttr("disabled");
+        }
+
+        function addnewitem() {
+            var desc = $("#newitem").val();
+            if (desc.trim() == "") {
+                alert("请输入问卷标题");
+                return;
+            }
+            var type = $("#newselecttype").val();
+            $.post("/AskPage/AddAskTopic", { desc: desc, pid: $("#pageId").val(), type: type }, function (data, textStatus) {
+
+                if (data.success == false) {
+                    alert(data.obj);
+                    return;
+                }
+                ShowItems(data);
+            });
+        }
+
+        function edititem(obj) {
+            if (obj.value == "修改") {
+                $("#text" + obj.id).show();
+                $("#selecttype" + obj.id).removeAttr("disabled");
+                $("#span" + obj.id).hide();
+                obj.value = "提交";
+            } else {
+                var type = $("#selecttype" + obj.id).val();
+                $.post("/AskPage/EditAskTopic", { tid: obj.id, desc: $("#text" + obj.id).val(), type: type }, function (data, textStatus) {
+
+                    if (data.success == false) {
+                        alert(data.obj);
+                        return;
+                    }
+                    $("#text" + obj.id).hide();
+                    $("#span" + obj.id).show();
+                    $("#selecttype" + obj.id).attr("disabled", "disabled");
+                    obj.value = "修改";
+                    $("#span" + obj.id).html($("#text" + obj.id).val());
+                });
+            }
+        }
+
+        function DeleteItem(id) {
+            if (confirm('删除后不可恢复，确定要删除吗？')) {
+                $.post("/AskPage/DeleteAskTopic2", { tid: id }, function (data, textStatus) {
+
+                    if (data.success == false) {
+                        alert(data.obj);
+                        return;
+                    }
+                    ShowItems(data.obj);
+                });
+            }
+
+        }
+
+        function UpItem(id) {
+            $.post("/AskPage/UpAskPage", { tid: id }, function (data, textStatus) {
+
+                if (data.success == false) {
+                    alert(data.obj);
+                    return;
+                }
+                ShowItems(data.obj);
+            });
+        }
+
+        function DownItem(id) {
+            $.post("/AskPage/DownAskPage", { tid: id }, function (data, textStatus) {
+
+                if (data.success == false) {
+                    alert(data.obj);
+                    return;
+                }
+                ShowItems(data.obj);
+            });
+        }
+
+        function SavePage() {
+            var pagetitle = $("#iptPageTitle").val();
+            $.post("/AskPage/AddAskPage", { name: pagetitle }, function (data, textStatus) {
+
+                //if (data.success == false) {
+                //    alert(data.obj);
+                //    return;
+                //}
+                SetUnselectContent(1, 20);
+                //$("#text" + obj.id).hide();
+                //$("#span" + obj.id).show();
+                //obj.value = "修改";
+                //$("#span" + obj.id).html($("#text" + obj.id).val());
+            });
+        }
+
+        //$('#modal-form input[type=file]').ace_file_input({
+        //    style: 'well',
+        //    btn_choose: 'Drop files here or click to choose',
+        //    btn_change: null,
+        //    no_icon: 'ace-icon fa fa-cloud-upload',
+        //    droppable: true,
+        //    thumbnail: 'large'
+        //})
+
+        ////chosen plugin inside a modal will have a zero width because the select element is originally hidden
+        ////and its width cannot be determined.
+        ////so we set the width after modal is show
+        $('#modal-form').on('shown.bs.modal', function () {
+            SelectTopic(g_curtopicid);
+        });
+
+
+        function addnewTopicitem() {
+            var desc = $("#newtopicitem").val();
+            if (desc.trim() == "") {
+                alert("请输入标题");
+                return;
+            }
+            $.post("/AskTopic/AddAskContent", { tid: g_curtopicid, desc: desc }, function (data, textStatus) {
+
+                if (data.success == false) {
+                    alert(data.obj);
+                    return;
+                }
+                ShowTopicItems(data);
+            });
+        }
+        function ShowTopicItems(items) {
+            var str = "<ol>";
+
+            $.each(items, function (i) {
+                str += "<li><span id='spanTopic" + this.id + "' style='min-width:200px;display: inline-block;'>" + this.Desc
+                    + "</span><input type='text' id='textTopic" + this.id + "'  style='display:none' value='"
+                    + this.Desc + "'/><input class='btn btn-default' type='button' id='" + this.id + "' onclick='editTopicitem(this);' value='修改'/>" +
+                    "<a href='#' onclick='UpTopicItem(" + this.id + ")'><span class='glyphicon glyphicon-arrow-up'></span></a> " +
+                    "<a href='#' onclick='DownTopicItem(" + this.id + ")'><span class='glyphicon glyphicon-arrow-down'></span></a> " +
+                    "<a href='#' onclick='DeleteTopicItem(" + this.id + ")'><span class='glyphicon glyphicon-remove'></span></a>" +
+                    "</li>";
+            });
+            str += "<li><input type='text' id='newtopicitem' style='min-width:198px;'> <input type='button' class='btn btn-default' onclick='addnewTopicitem();' value='添加'/></li><ol>";
+            $("#divTopicItems").html(str);
+        }
+        function editTopicitem(obj) {
+            if (obj.value == "修改") {
+                $("#textTopic" + obj.id).show();
+                $("#spanTopic" + obj.id).hide();
+                obj.value = "提交";
+            } else {
+                $.post("/AskTopic/EditAskContent", { cid: obj.id, desc: $("#textTopic" + obj.id).val() }, function (data, textStatus) {
+
+                    if (data.success == false) {
+                        alert(data.obj);
+                        return;
+                    }
+                    $("#textTopic" + obj.id).hide();
+                    $("#spanTopic" + obj.id).show();
+                    obj.value = "修改";
+                    $("#spanTopic" + obj.id).html($("#textTopic" + obj.id).val());
+                });
+            }
+        }
+        function SelectTopic(id) {
+            //$("#topicId").val(id);
+            $("#divTopicItems").html("加载中...");
+            $("#sptopictitle").html(g_curtopictitle);
+            $.post("/AskTopic/SelectAskContents", { topicId: id }, function (data, textStatus) {
+                if (!data) {
+                    alert(data);
+                    return;
+                }
+                ShowTopicItems(data);
+            });
+        }
+
+        function DeleteTopicItem(id) {
+            if (confirm('删除后不可恢复，确定要删除吗？')) {
+                $.post("/AskTopic/DeleteAskContent", { cid: id }, function (data, textStatus) {
+
+                    if (data.success == false) {
+                        alert(data.obj);
+                        return;
+                    }
+                    ShowTopicItems(data.obj);
+                });
+            }
+
+        }
+
+        function UpTopicItem(id) {
+            $.post("/AskTopic/UpAskContent", { cid: id }, function (data, textStatus) {
+
+                if (data.success == false) {
+                    alert(data.obj);
+                    return;
+                }
+                ShowTopicItems(data.obj);
+            });
+        }
+
+        function DownTopicItem(id) {
+            $.post("/AskTopic/DownAskContent", { cid: id }, function (data, textStatus) {
+
+                if (data.success == false) {
+                    alert(data.obj);
+                    return;
+                }
+                ShowTopicItems(data.obj);
+            });
+        }
+
+
+
+    </script>
+}
+
+@using (Html.BeginForm())
+{
+    <div class="well" style="margin:0px auto;margin-top:10px;">
+        @Html.ValidationSummary(true)
+        <div class="container ">
+            <div style="width: 900px; margin: auto">
+                <input placeholder="" id="iptPageTitle" />
+                <button onclick="javascript: SavePage();">新增问卷</button>
+            </div>
+        </div>
+        <fieldset>
+            <legend>AskTopic修改</legend>
+            <div class="container">
+                <div style="width: 900px; margin: auto">
+                    <div class="col-xs-3 infoDiv" style="min-height: 450px;">
+                        <h3>问卷选择</h3>
+                        <input placeholder="输入查询内容" id="iptSearch" /> <button onclick="javascript: searchContent();">查询</button>
+
+                        <ul class="nav nav-list" id="ulunselcontent"></ul>
+                        <ul class="pager" id="ultopicpager"></ul>
+                    </div>
+                    <div class="col-xs-8 infoDiv" style="min-height: 450px;">
+                        <input type="hidden" id="pageId" value="0">
+                        <h3 id="spanTopic"></h3><br>
+                        <div id="divItems">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </fieldset>
+    </div>
+    <div style="margin:0px auto;padding:10px;">
+        @MyControls.FormBtn(true)
+    </div>
+}
+
+
+
+<div id="modal-form" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="blue bigger">编辑题目</h4>
+                <span id="sptopictitle">题目在这里</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12">
+                        <div id="divTopicItems">
+
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        </div>
+    </div>
+</div>

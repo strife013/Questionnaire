@@ -1,0 +1,158 @@
+﻿@model  OUDAL.AskPage
+@using OUDAL;
+@{
+    // ViewBag.Title = "AskResultPage";
+     
+}
+
+<h2>AskResultPage</h2>
+ 
+
+<h2 id="hpagetitle">@Model.Name</h2>
+<script>
+    var PostSuccess = '@ViewBag.PostSuccess';
+    if (PostSuccess == "true") {
+        alert("提交成功");
+        window.close();
+    }
+
+    $(function () {
+        var pageid = '@Model.id';
+        var cid = '@ViewBag.SetClientId';
+        var cname = '@ViewBag.SetClientName';
+
+        @* var result = "@ViewBag.Result";
+        if (result)
+        {
+            window.location.href = "/AskResult/AskResultList";
+        }*@
+
+        //, cid: cid, cname: cname
+        $.post("/Client/GetPageTopic", { pageid: pageid }, function (data) {
+            var topicBodyHtml = "";
+            var pageBodyHtml = "";
+            //0 topic indexnum ;1,topic title
+            var topicTemplate = " <div class=\"row\">";
+            topicTemplate += "<div class=\"col-xs-12\">";
+            topicTemplate += "<h2>{0} {1}</h2> ";
+            topicTemplate += "<div class=\"control-group\">";
+
+
+            //0id,1 value,  2 题目描述
+            var radioTemplate = "    <div class=\"radio\">";
+            radioTemplate += "        <label>";
+            radioTemplate += "            <input name=\"iptquestion{0}\" value=\"{1}\" type=\"radio\" >";
+            radioTemplate += "            <span class=\"lbl\"> {1}、{2}</span>";
+            radioTemplate += "        </label>";
+            radioTemplate += "    </div>  ";
+
+            //多选描述0id,1 value,  2 题目描述
+            var checkTemplate = "<div class=\"fa-check\">";
+            checkTemplate += "  <label>";
+            checkTemplate += "     <input name=\"iptquestion{0}\"   type=\"checkbox\" value=\"{1}\" class=\"ace\">";
+            checkTemplate += "        <span class=\"lbl\"> {1}、{2}</span>";
+            checkTemplate += "    </label>";
+            checkTemplate += " </div>";
+
+            //文本输入 0id,1 value,  2 题目描述
+            var textTemplate = "    <label class=\"col-sm-1 control-label no-padding-right right\" for=\"form-field-1-1\"> {2} </label>";
+            textTemplate += " <div class=\"col-sm-9\">";
+            textTemplate += "         <input type=\"text\" name=\"iptquestion{0}\"   class=\"form-control\">";
+            textTemplate += "     </div>";
+
+
+            var topicTemplateFooter = "</div>";
+            topicTemplateFooter += " </div>";
+            topicTemplateFooter += "</div>";
+
+            for (var i = 0; i < data.Topics.length; i++) {
+                topicBodyHtml = "";
+                var realTemplate = radioTemplate;
+                switch (data.Topics[i].Topic.Type) {
+                    case "danxuan":
+                        realTemplate = radioTemplate;
+                        break;
+                    case "duoxuan":
+                        realTemplate = checkTemplate;
+                        break;
+                    case "wenben":
+                        realTemplate = textTemplate;
+                        break;
+                }
+                //== "danxuan") {
+                //    realTemplate = radioTemplate;
+                //}else
+                for (var j = 0; j < data.Topics[i].Contents.length; j++) {
+
+                    topicBodyHtml += realTemplate.template(i, GetValueByIndexNum(data.Topics[i].Contents[j].IndexNum), data.Topics[i].Contents[j].Desc);
+                }
+                pageBodyHtml += topicTemplate.template(data.Topics[i].Topic.IndexNum + 1, data.Topics[i].Topic.Title) + topicBodyHtml + topicTemplateFooter;
+            }
+
+
+
+            $("#divmain").html(pageBodyHtml);
+
+            
+            
+        });
+    });
+
+    function SetPageResult( rid) {
+        //设置问卷答案：
+        $.post("/Client/GetPageResult", { rid: rid }, function (data) {
+            if (!data) return;
+
+            //data.answer
+        });
+    }
+
+    function GetValueByIndexNum(indexNum) {
+        switch (indexNum) {
+            case 0:
+                return "A";
+            case 1:
+                return "B";
+            case 2:
+                return "C";
+            case 3:
+                return "D";
+            case 4:
+                return "E";
+            case 5:
+                return "F";
+            case 6:
+                return "G";
+            case 7:
+                return "H";
+            case 8:
+                return "I";
+            case 9:
+                return "J";
+            case 10:
+                return "K";
+            default:
+        }
+        return "";
+    }
+
+</script>
+<h2>客户： @ViewBag.SetClientName</h2>
+<div id="divmain"></div>
+<hr />
+<div style="height: 0">
+    <input type="hidden" name="pageid" value="@Model.id" />
+    <input type="hidden" name="pagename" value="@Model.Name" />
+    <input type="hidden" name="uid" value="@ViewBag.SetClientId" />
+    <input type="hidden" name="uname" value="@ViewBag.SetClientName" />
+</div>
+<div class="clearfix form-actions">
+    <div class="col-md-offset-3 col-md-9">
+
+        &nbsp; &nbsp; &nbsp;
+        <button class="btn" type="reset" onclick="window.close();">
+            <i class="ace-icon fa fa-close bigger-110"></i>
+            关闭
+        </button>
+    </div>
+</div> 

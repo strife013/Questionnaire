@@ -1,0 +1,108 @@
+﻿CSS部分
+.ui-jqgrid .ui-jqgrid-view {position: relative;left:0px; top: 0px; padding: .0em; font-size:11px;}  ----font-size删除
+
+页面跳转选择框：
+.ui-jqgrid .ui-pg-input { height:13px;font-size:1em; margin: 0em;width:30px}
+.ui-jqgrid .ui-pg-selbox {font-size:1em; line-height:18px; display:block; height:24px; margin: 0em;width:60px}
+
+
+
+
+---------------------------------------
+
+var p = $.extend(true,{
+			url: "",
+			height: 150,
+			page: 1,
+			rowNum: 20,  <===============这里改为20000
+
+
+addRowNum = function (pos,irow,pG,rN) {
+			var v =  (parseInt(pG,10)-1)*parseInt(rN,10)+1+irow,
+			prp = formatCol( pos,irow,v, null, irow, true);
+			return "<td role=\"gridcell\" class=\"ui-state-default jqgrid-rownum\" "+prp+">"+v+"</td>";
+		},
+如下 --------------------------
+addRowNum = function (pos,irow,pG,rN,rowid) {
+			var v =  (parseInt(pG,10)-1)*parseInt(rN,10)+1+irow,
+			prp = formatCol( pos,irow,v, null, irow, true);
+			return "<td onClick=\"rowclick('" + rowid + "');\" role=\"gridcell\" class=\"ui-state-default jqgrid-rownum\" " + prp + ">" + v + "</td>";
+		},
+---------------------------------------
+while (j<gl) {
+				xmlr = gxml[j];
+				rid = getId(xmlr,br+j);
+				rid  = ts.p.idPrefix + rid;
+				altr = rcnt === 0 ? 0 : rcnt+1;
+				cn1 = (altr+j)%2 === 1 ? cn : '';
+				var iStartTrTag = rowData.length;
+				rowData.push("");
+				if( ni ) {
+				    rowData.push(addRowNum(0, i, ts.p.page, ts.p.rowNum));  --->rowData.push(addRowNum(0, i, ts.p.page, ts.p.rowNum,rid));
+				}
+-----------------------------------------
+var iStartTrTag = rowData.length;
+				rowData.push("");
+				if( ni ) {
+					rowData.push( addRowNum(0,i,ts.p.page,ts.p.rowNum,idr) );
+				}
+如下：
+var iStartTrTag = rowData.length;
+				rowData.push("");
+				if( ni ) {
+					rowData.push( addRowNum(0,i,ts.p.page,ts.p.rowNum) );
+				}
+
+				---------------------------------
+addCell = function(rowId,cell,pos,irow, srvr, rdata) {
+			var v,prp;
+			v = formatter(rowId, cell, pos, srvr, 'add');
+		    if (v == null) v = "";   ==================================== 这里修改
+			prp = formatCol( pos,irow, v, srvr, rowId, rdata);
+			return "<td role=\"gridcell\" "+prp+">"+v+"</td>";
+		},
+
+样式表
+
+		.ui-jqgrid .ui-jqgrid-htable th div
+            {
+                /*overflow: hidden;
+                position: relative;
+                height: 22px;
+                vertical-align: middle;*/
+height:auto;
+overflow:hidden;
+padding-right:4px;
+padding-top:2px;
+position:relative;
+vertical-align:text-top;
+white-space:normal !important;
+            }
+			============================================================
+4.5.4
+
+css文件
+.ui-jqgrid .ui-jqgrid-bdiv {
+position: relative;
+margin: 0em;
+padding: 0;
+    //overflow:auto;
+overflow-x:hidden; overflow-y: auto;
+text-align: left;
+
+未加入部分（导出excel ，见newheight 项目
+ }).bind('reloadGrid', function (e, opts) {
+                if (ts.p.treeGrid === true) { ts.p.datatype = ts.p.treedatatype; }
+===================这部分是添加进去的===================================
+                if (opts == 1) {
+                    var inputs = '';
+                    //alert(ts.p.postData.Attributes);
+                    for (var p in ts.p.postData) {
+                        inputs += '<input type="hidden" name="' + p + '" value="' + ts.p.postData[p] + '" />';
+                    }
+                    jQuery('<form action="' + ts.p.url + '" method="POST"><input type="hidden" name="exportexcel" value="1"/>' + inputs + '</form>')
+                    	.appendTo('body').submit().remove();
+                }
+=========================================================================
+                if (opts && opts.current) {
+                    ts.grid.selectionPreserver(ts);

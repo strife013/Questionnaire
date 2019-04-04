@@ -1,0 +1,59 @@
+﻿
+
+
+@model OUDAL.AskResult
+@using OUDAL;
+@ 
+ 
+@{
+    ViewBag.Title = "问卷结果表|查看";
+     
+}
+@section scripts{
+<script type="text/javascript">
+    function deleteAskResult(id) {
+        if (confirm("确定删除吗?")) {
+        $.ajax({
+            type: "Post",
+            url: "../DeleteAskResult",
+            data: { id: id, d: new Date() },
+            success: function (data) {
+                alert(data.obj);
+                if (data.success == true) {
+                    window.opener.location = window.opener.location;
+                    window.close();
+                }
+            },
+            error: function (msg) {
+                alert("error:" + msg);
+            }
+        });
+        }
+    }
+</script>
+} 
+
+<div class="widget-toolbox btn-toolbar ui-widget  ui-corner-all toolbarDiv">
+
+
+
+    @MyControls.Btn("修改", "window.location.href=('../AskResultEdit/" + Model.id + "');", "edit")
+    @MyControls.Btn("删除", "deleteAskResult('"+ Model.id + "');", "remove")
+	@MyControls.Btn("关闭", "window.close();")
+</div> @Html.HiddenFor(model => model.id)
+<div class=" ui-corner-all">
+
+    <table class="table table-bordered"> 
+             <tr>@Html.MyDisplayFor(m => m.score)</tr>
+             <tr>@Html.MyDisplayFor(m => m.result)</tr>
+             <tr>@Html.MyDisplayFor(m => m.uid)</tr>
+             <tr>@Html.MyDisplayFor(m => m.uname)</tr>
+             <tr>@Html.MyDisplayFor(m => m.createdate)</tr>
+             <tr>@Html.MyDisplayFor(m => m.updatetime)</tr>
+             <tr>@Html.MyDisplayFor(m => m.pageid)</tr>
+             <tr>@Html.MyDisplayFor(m => m.pagetitle)</tr>
+             <tr>@Html.MyDisplayFor(m => m.answer)</tr>
+             <tr>@Html.MyDisplayFor(m => m.state)</tr>
+</table>
+</div>
+

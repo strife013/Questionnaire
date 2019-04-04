@@ -1,0 +1,46 @@
+﻿@model OUDAL.AskResult
+@ 
+@{
+    ViewBag.Title = "问卷结果表 | 编辑";
+     
+}
+@section scripts
+    {
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+<script type="text/javascript">
+        jQuery(document).ready(function () {
+            $(".datepicker").datepicker({ changeMonth: true, changeYear: true, showButtonPanel: true, showOtherMonths: true, selectOtherMonths: true });
+            $(".form-group").addClass("col-md-6"); 
+        });
+
+</script>
+
+
+}
+ 
+@using (Html.BeginForm()) {
+    <div class="well" style="margin:0px auto;margin-top:10px;"	>
+        @Html.ValidationSummary(true)
+        <fieldset>
+            <legend>问卷结果表修改</legend>
+        
+<!--目前框架新增和修改同一界面，造成的问题就是输入的字段新增和修改都一样-->
+				 @Html.HiddenFor(model => model.id)
+@Html.MyTextFor(model => model.score)
+@Html.MyTextFor(model => model.result)
+@Html.MyTextFor(model => model.uid)
+@Html.MyTextFor(model => model.uname)
+@Html.MyDateFor(model => model.createdate)
+@Html.MyDateFor(model => model.updatetime)
+@Html.MyTextFor(model => model.pageid)
+@Html.MyTextFor(model => model.pagetitle)
+@Html.MyTextFor(model => model.answer)
+@Html.MyTextFor(model => model.state)
+
+        </fieldset>
+    </div>
+    <div style="margin:0px auto;padding:10px;">
+        <input type="submit" class="btn btn-primary" value="保存" />
+    </div>
+}
