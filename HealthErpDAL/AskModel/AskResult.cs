@@ -110,7 +110,7 @@ namespace OUDAL
             get
             {
                 if (!string.IsNullOrEmpty(AnswerJson))
-                    return Common.Utilities.ObjectSerializer.JSONStringToList<AskAnswer>(AnswerJson);
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject<List<AskAnswer>>(AnswerJson);
                 return new List<AskAnswer>();
             }
         }
