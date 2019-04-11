@@ -10,5 +10,5 @@ Questionnaire  问卷调查 demo <a href='http://ask.lzxuan.com/AskPage/AskPageL
 ![](https://github.com/strife013/Questionnaire/blob/master/screen1.png)
 ![](https://github.com/strife013/Questionnaire/blob/master/screen2.png)
 
-any help?
+交个朋友
 ![](https://github.com/strife013/EgretCard/blob/master/CardEUI3/resource/assets/wxzs.png)
