@@ -1,9 +1,7 @@
 ﻿
 @using OUDAL
 @{
-    ViewBag.Title = "问卷结果表";  
-    int ProjectId;
-    int.TryParse(Request.RequestContext.RouteData.Values["projectid"] + "", out ProjectId);
+    ViewBag.Title = "问卷结果表";   
 }
      
  
@@ -14,7 +12,7 @@
         jQuery(document).ready(function() {
             var PostData = {};
             $(".datepicker").datepicker({ changeMonth: true, changeYear: true, showButtonPanel: true, showOtherMonths: true, selectOtherMonths: true });
-            @Html.Raw(JqGridSimple.OutGrid("AskResultQuery?projectid=" + ProjectId));
+            @Html.Raw(JqGridSimple.OutGrid("AskResultQuery"));
             g_grid = jQuery('#listGrid');
 
             function keyEnter(event) {
