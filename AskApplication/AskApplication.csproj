@@ -269,7 +269,7 @@
     <Content Include="Scripts\jquery-3.3.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HealthErpDAL\AskDAL.csproj">
+    <ProjectReference Include="..\AskDAL\AskDAL.csproj">
       <Project>{e398d3c7-d608-43bf-a8dd-9698aead0593}</Project>
       <Name>AskDAL</Name>
     </ProjectReference>
