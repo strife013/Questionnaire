@@ -27,13 +27,10 @@ namespace Matrix.Web.Controllers
         }
 
         /*---------------------- AskTopic------------------------------*/
-        // [MyAuthorize("AskTopic-AskTopic查看")]
         public ActionResult AskTopicList()
         {
             return View();
         }
-        //[MyAuthorize(MyAuthorizeResultEnum.JsonResultType, "AskTopic-AskTopic查看")]
-        //int projectid,
         [HttpPost]
         public JsonResult AskTopicQuery(string sidx, string sord, int page, int rows, FormCollection collection)
         { 
@@ -104,14 +101,12 @@ namespace Matrix.Web.Controllers
             return Json(jsonData);
         }
 
-        // [MyAuthorize("AskTopic-AskTopic查看")]
         public ActionResult AskTopicView(int id)
         {
             AskTopic r = db.AskTopic.Find(id);
             return View(r);
         }
          
-        // [MyAuthorize("AskTopic-AskTopic编辑")]
         public ActionResult AskTopicEdit(int id)
         {
 
@@ -367,7 +362,6 @@ namespace Matrix.Web.Controllers
           
             return Json(result);
         }
-        // [MyAuthorize("AskTopic-AskTopic编辑")]
         [HttpPost]
         public ActionResult AskTopicEdit(int id, int? projectid, FormCollection collection)
         {
@@ -388,7 +382,6 @@ namespace Matrix.Web.Controllers
             }
             return View(r);
         }
-        // [MyAuthorize(MyAuthorizeResultEnum.JsonResultType, "AskTopic-AskTopic编辑")]
         [HttpPost]
         public JsonResult DeleteAskTopic(int id, FormCollection collection)
         {

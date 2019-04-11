@@ -127,8 +127,6 @@
         var g_l;
 
         function formatModel(cellValue, options, rowObject) {
-            //  cellValue = HTMLEncode2(cellValue);//HtmlUtil.htmlEncode(cellValue);
-            // if (g_g == "") g_g = cellValue; 
             g_Array[g_Array.length] = cellValue;
             g_Title[g_Title.length] = rowObject.pagetitle;
 
@@ -289,7 +287,7 @@
 
             <div class="modal-footer">
                 <button class="btn btn-sm btn-primary" onclick="saveaskresult()" data-dismiss="modal">
-                    <i class="ace-icon fa fa-check"></i>
+                    <i class="ace-icon fa fa-check">提交</i>
                 </button>
             </div>
         </div>

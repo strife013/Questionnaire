@@ -7,7 +7,40 @@ using System.Web;
 
 namespace BaseErp.Web.Models
 {
- 
+ public class PageHelper
+    {
+        public static string ClientIP
+        {
+            get
+            {
+                if (HttpContext.Current == null || HttpContext.Current.Request == null || HttpContext.Current.Request.ServerVariables == null) return "";
+                string IP = (HttpContext.Current.Request.ServerVariables["HTTP_VIA"] != null) ? (HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"] + "") : (HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"] + "");
+                return IP;
+            }
+        }
+
+        public static decimal GetQuestionScore(string result)
+        {
+            switch (result.ToLower())
+            {
+                case "a":
+                    return 1;
+
+                case "b":
+                    return 2;
+
+                case "c":
+                    return 3;
+
+                case "d":
+                    return 4;
+
+                case "e":
+                    return 2.5M;
+            }
+            return 1;
+        }
+    }
 
     public class Result
     {

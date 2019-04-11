@@ -1,7 +1,7 @@
 ﻿@using HealthErp.Web.Controllers
 @{
 }
- 
+
 @section scripts{
 
     <script type="text/javascript">
@@ -90,10 +90,14 @@
 
 
         function formatModel(cellValue, options, rowObject) {
-            //g_Array[g_Array.length] = cellValue;
-            //g_Title[g_Title.length] = rowObject.pagetitle;
             var imageHtml = "<input type=\"button\" value=\"问卷编辑\"  class=\"btn-info\" onclick=\"openAskEdit(" + rowObject.id + ");\" />";
+
+            imageHtml += `<input type=\"button\" value=\"填写问卷\"  class=\"btn-normal\" onclick=\"writeAsk(${rowObject.id},'${rowObject.Name}');\" />`;
             return imageHtml;
+        }
+
+        function writeAsk(id,pname) {
+            setAskPageHtml(id, pname);
         }
 
         function openAskEdit(id) {
@@ -102,7 +106,6 @@
 
         function rowclick(id) {
             var pk = g_grid.getRowData(id).id;
-
           //  OpenFullWindow("./AskPageView2/" + pk);
         }
 
@@ -138,12 +141,125 @@
         function ShowAddNew() {
             $("#addnew").show();
         }
+
+        function saveaskresult() {
+            if (!confirm("会更新问卷数据，请确认?")) return;
+            var answerHtml = $("#showdiv").html();
+            $("#divmaindata").val(answerHtml);
+        }
+
+
+
+     $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+      });
+
+        function setAskPageHtml(pageid, pagename) {
+            $("#topicname").val(pagename);
+            $("#pageid").val(pageid);
+            $.post("/AskPage/GetPageTopic", { pageid: pageid}, function (data) {
+
+                var topicBodyHtml = "";
+                var pageBodyHtml = "";
+                //0 topic indexnum ;1,topic title
+                var topicTemplate = " <div class=\"row\">";
+                topicTemplate += "<div class=\"col-xs-12\">";
+                topicTemplate += "<h3>{0} {1}</h3> ";
+                topicTemplate += "<div class=\"control-group\">";
+
+
+                //0id,1 value,  2 题目描述
+                var radioTemplate = "    <div class=\"radio\">";
+                radioTemplate += "        <label>";
+                radioTemplate += "            <input tag=\"iptquestion{0}\"  name=\"iptquestion{0}\" value=\"{1}\" onclick=\"setradio(this)\" type=\"radio\" class=\"ace\"  >";
+                radioTemplate += "            <span class=\"lbl\"> {1}、{2}</span>";
+                radioTemplate += "        </label>";
+                radioTemplate += "    </div>  ";
+
+                //多选描述0id,1 value,  2 题目描述
+                var checkTemplate = "<div class=\"\">";
+                checkTemplate += "  <label>";
+                checkTemplate += "<input  tag=\"iptquestion{0}\"  name=\"iptquestion{0}\"   type=\"checkbox\" onclick=\"setradio(this)\" value=\"{1}\" class=\"ace\">";
+                checkTemplate += "        <span class=\"lbl\"> {1}、{2}</span>";
+                checkTemplate += "    </label>";
+                checkTemplate += " </div>";
+
+                //文本输入 0id,1 value,  2 题目描述
+                var textTemplate = "<label class=\"col-sm-1 control-label no-padding-right right\" for=\"form-field-1-1\"> {2} </label>";
+                textTemplate += " <div class=\"col-sm-11\">";
+                textTemplate += " <input  tag=\"iptquestion{0}\" id=\"iptquestion{3}\" type=\"text\" name=\"iptquestion{0}\" onblur=\"settext(this)\"  class=\"form-control\">";
+                textTemplate += " </div>";
+
+
+                var topicTemplateFooter = "</div>";
+                topicTemplateFooter += " </div>";
+                topicTemplateFooter += "</div>";
+                g_data = [];
+                //当前问题号码，会上升，改变问卷顺序时应该有个bug，会让IndexNumber不是按照顺序来，导致错误
+                //这个变量按照大小来，而不是IndexNumber的具体数字
+                var curQuestionNumber = "A";
+                for (var i = 0; i < data.Topics.length; i++) {
+                    topicBodyHtml = "";
+                    var realTemplate = radioTemplate;
+                    switch (data.Topics[i].Topic.Type) {
+                        case "danxuan":
+                            realTemplate = radioTemplate;
+                            break;
+                        case "duoxuan":
+                            realTemplate = checkTemplate;
+                            break;
+                        case "wenben":
+                            realTemplate = textTemplate;
+                            break;
+                    }
+                    curQuestionNumber = 65//"A";
+
+                    ///为了让name不重复以便可以在列表中正确显示，如果name重复，会造成选中的checkbox不显示为选中
+                    var rand = Math.random(9999999);
+                    for (var j = 0; j < data.Topics[i].Contents.length; j++) {
+
+                        g_data.push(i + "a{0}a".template(rand) + data.Topics[i].Contents[j].TopicId);
+                        //topicBodyHtml += realTemplate.template(i + data.Topics[i].Contents[j].id + "", GetValueByIndexNum(data.Topics[i].Contents[j].IndexNum), data.Topics[i].Contents[j].Desc);
+                        topicBodyHtml += realTemplate.template(i + "a{0}a".template(rand) + data.Topics[i].Contents[j].TopicId,
+                            GetValueByIndexNumByPre(curQuestionNumber++)
+                            , data.Topics[i].Contents[j].Desc
+                            , data.Topics[i].Contents[j].TopicId);
+                    }
+
+                    pageBodyHtml += topicTemplate.template(data.Topics[i].Topic.IndexNum + 1, data.Topics[i].Topic.Title) + topicBodyHtml + topicTemplateFooter;
+                }
+
+
+
+                $("#showdiv").html(pageBodyHtml);
+                //绑定特殊 77,78,79 BMI
+                $("#iptquestion77").blur(function (d) {
+                    setBMI();
+                })
+                $("#iptquestion78").blur(function (d) {
+                    setBMI();
+                })
+                $("#modal-form").show();
+            });
+        }
+    //todo BMI规则
+    function setBMI() {
+        var tz = parseFloat($("#iptquestion77").val());
+        var sg = parseFloat($("#iptquestion78").val());
+        var bmi = tz / Math.pow(sg,2);
+        //BMI = 體重(公斤) / 身高2(公尺2)
+        $("#iptquestion79").val(bmi);
+    }
+
+
     </script>
 }
 
+<form action="/AskResult/InsertQuestionPage" method="post">
     <div class="ui-widget  ui-corner-all searchdiv ">
-        
-    
+        <input type="hidden" name="divmaindata" id="divmaindata" />
+        <input type="hidden" name="topicname" id="topicname" />
+        <input type="hidden" name="pageid" id="pageid" />
         <button class="btn-bold" onclick="javascript: EditAskPage();">编辑问卷</button>
         <button class="btn-bold" onclick="javascript: ShowAddNew();">新增问卷</button>
         <div id="addnew" style="display: none">
@@ -153,3 +269,29 @@
         </div>
     </div>
     @Html.Raw(JqGridSimple.OutTable())
+
+    <div id="modal-form" class="modal" tabindex="-1">
+        <div class="modal-dialog" style="width: 1000px;height: 80%;overflow-y: scroll;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="blue bigger" id="showtitle">查看</h4>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12" id="showdiv" name="showdiv">
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-primary" type="submit" onclick="return saveaskresult()" data-dismiss="modal">
+                        <i class="ace-icon fa fa-check">提交</i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

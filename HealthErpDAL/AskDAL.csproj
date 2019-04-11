@@ -219,6 +219,7 @@
     <Compile Include="AskModel\AskResult.cs" />
     <Compile Include="AskModel\AskTopic.cs" />
     <Compile Include="AskModel\AskTopicContent.cs" />
+    <Compile Include="AskModel\PageModel.cs" />
     <Compile Include="MyAppContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

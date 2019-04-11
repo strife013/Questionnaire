@@ -222,7 +222,6 @@ namespace HealthErp.Web.Controllers
             }
             return View(r);
         }
-        // [MyAuthorize(MyAuthorizeResultEnum.JsonResultType, "AskTopic-AskTopic编辑")]
         [HttpPost]
         public JsonResult DeleteAskTopic(int id, FormCollection collection)
         {
@@ -299,7 +298,6 @@ namespace HealthErp.Web.Controllers
         }
 
         /*---------------------- AskPage------------------------------*/
-        // [MyAuthorize("AskPage-AskPage查看")]
         public ActionResult AskPageList()
         {
             return View();
@@ -308,7 +306,6 @@ namespace HealthErp.Web.Controllers
         {
             return View();
         }
-        //[MyAuthorize(MyAuthorizeResultEnum.JsonResultType, "AskPage-AskPage查看")]
         [HttpPost]
         public JsonResult AskPageQuery(string sidx, string sord, int page, int rows, FormCollection collection)
         {
@@ -355,7 +352,6 @@ namespace HealthErp.Web.Controllers
         }
 
 
-        // [MyAuthorize("AskPage-AskPage查看")]
         public ActionResult AskPageView(int id)
         {
             AskPage r = db.AskPage.Find(id);
@@ -366,7 +362,6 @@ namespace HealthErp.Web.Controllers
             AskPage r = db.AskPage.Find(id);
             return View(r);
         }
-        //  [MyAuthorize("AskPage-AskPage编辑")]
         public ActionResult AskPageEdit(int id)
         {
             AskPage r = db.AskPage.Find(id);
@@ -377,7 +372,6 @@ namespace HealthErp.Web.Controllers
             AskPage r = db.AskPage.Find(id);
             return View(r);
         }
-        // [MyAuthorize("AskPage-AskPage编辑")]
         [HttpPost]
         public ActionResult AskPageEdit(int id, int? projectid, FormCollection collection)
         {
@@ -415,6 +409,31 @@ namespace HealthErp.Web.Controllers
                 result.obj = "已删除";
             }
             return Json(result);
+        }
+
+
+
+        /// <summary>
+        /// 获取问卷信息
+        /// </summary>
+        /// <param name="pageid"></param>
+        /// <returns></returns>
+        public JsonResult GetPageTopic(int pageid)
+        {
+            PageFull pFull = new PageFull();
+
+            AskPage page = db.AskPage.Find(pageid);
+            pFull.Page = page;
+
+            List<AskTopic> topics = db.AskTopic.Where(a => a.PageId == pageid).OrderBy(a => a.IndexNum).ToList();
+
+            foreach (AskTopic topic in topics)
+            {
+                List<AskContent> contents = db.AskContent.Where(a => a.TopicId == topic.id).OrderBy(a => a.IndexNum).ToList();
+                pFull.Topics.Add(new TopicFull() { Contents = contents, Topic = topic });
+            }
+
+            return Json(pFull); ;
         }
 
     }

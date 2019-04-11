@@ -10,6 +10,7 @@ using System.Web.Mvc;
  
 using HealthErpDAL;
 using BaseErp.Web.Models;
+using System.Web.Script.Serialization;
 
 namespace HealthErp.Web.Controllers
 {
@@ -29,8 +30,62 @@ namespace HealthErp.Web.Controllers
 
         #endregion
 
+        [ValidateInput(false)]
+        [System.Web.Mvc.HttpPost]
+        public ActionResult InsertQuestionPage(FormCollection collection)
+        {
+            StringBuilder sbResult = new StringBuilder();
+            AskResult result = new AskResult();
+            List<AskAnswer> answers = new List<AskAnswer>();
+
+            string TopicName = collection["topicname"];
+
+            foreach (string key in collection.Keys)
+            {
+                if (key.IndexOf("iptquestion") >= 0)
+                {
+                    if (sbResult.Length > 0) sbResult.Append(",");
+                    sbResult.AppendFormat("{0}:{1}", key, collection[key]);
+                    int aIndex = key.LastIndexOf("a");
+                    string stringTopicId = "";
+                    if (aIndex >= 0)
+                    {
+                        stringTopicId = key.Substring(aIndex + 1);
+
+                    }  
+                    int topicId = 0;
+                    int.TryParse(stringTopicId, out topicId);
+
+                    answers.Add(new AskAnswer() { SelectResult = collection[key], TopicId = topicId, Score = PageHelper.GetQuestionScore(collection[key]) });
+                }
+            }
+
+            int pid = 0;
+            int.TryParse(collection["pageid"], out pid);
+            result.pageid = pid;
+            result.createdate = DateTime.Now;
+
+            int uid = 0;
+            int.TryParse(collection["uid"], out uid);
+            result.uid = uid;
+
+            result.uname = PageHelper.ClientIP;
+            result.pagetitle = TopicName;
+            result.score = answers.Select(a => a.Score).Sum();
+             
+            result.answer = answers.Sum(a=>a.Score).ToString();
+            result.AnswerJson = new JavaScriptSerializer().Serialize(answers);
+
+            result.answerHtml = collection["divmaindata"]; 
+
+           asdb.AskResult.Add(result);
+            asdb.SaveChanges();
+            //iptquestion
+            ViewBag.Result = result;
+            ViewBag.PostSuccess = "true";
+            return View("../AskResult/AskResultList");
+        }
         /*---------------------- AskResult------------------------------*/
-        // [MyAuthorize("问卷结果表-问卷结果表查看")]
         public ActionResult AskResultList()
         {
             return View();
@@ -107,7 +162,7 @@ namespace HealthErp.Web.Controllers
 
             return Json(data);
         }
-        // [MyAuthorize("问卷结果表-问卷结果表编辑")]
+ 
         [HttpPost]
         public ActionResult AskResultEdit(int id, int? projectid, FormCollection collection)
         {
@@ -129,7 +184,6 @@ namespace HealthErp.Web.Controllers
             }
             return View(r);
         }
-        // [MyAuthorize(MyAuthorizeResultEnum.JsonResultType, "问卷结果表-问卷结果表编辑")]
         [HttpPost]
         public JsonResult DeleteAskResult(int id, FormCollection collection)
         {
