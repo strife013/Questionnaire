@@ -44,7 +44,7 @@
                 index: 'CreateTime',
                 width: 150,
                 align: 'left',
-                formatter: 'date'
+                formatter: dateformater
             }, {
                 name: 'Name',
                 label: '问卷名称',
@@ -69,7 +69,9 @@
                 edittype: 'custom'
             }
         ];
-
+        function dateformater(c, o, r) {
+            return getTime(parseInt(c.replace("/Date(", "").replace(")/", "")),"");
+        }
         function deletePage(cellValue, options, rowObject) {
 
             //g_Array[g_Array.length] = cellValue;
